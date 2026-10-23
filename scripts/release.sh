@@ -95,10 +95,13 @@ if ! ghgit push --atomic "$REMOTE" main "$TAG"; then
 fi
 
 step "Building and publishing on GitHub"
+# The run for this tag's commit (an earlier failed attempt has the same tag name).
+sha="$(git rev-parse "$TAG^{commit}")"
 run_id=""
 for _ in $(seq 1 30); do
-  run_id="$(gh run list --repo "$REPO" --workflow release.yml --branch "$TAG" --limit 1 \
-    --json databaseId --jq '.[0].databaseId // empty' 2>/dev/null || true)"
+  run_id="$(gh run list --repo "$REPO" --workflow release.yml --branch "$TAG" --limit 5 \
+    --json databaseId,headSha --jq "[.[] | select(.headSha == \"$sha\")][0].databaseId // empty" \
+    2>/dev/null || true)"
   [[ -n "$run_id" ]] && break
   sleep 2
 done
