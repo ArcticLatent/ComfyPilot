@@ -17,10 +17,7 @@
 </p>
 
 <p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/comfy-dark.png" />
-    <img src="docs/screenshots/comfy-light.png" alt="ComfyPilot managing three ComfyUI installs" width="100%" />
-  </picture>
+  <a href="docs/screenshots/comfy-dark.png"><img src="docs/screenshots/comfy-dark.png#gh-dark-mode-only" alt="ComfyPilot managing three ComfyUI installs" width="100%" /></a><a href="docs/screenshots/comfy-light.png"><img src="docs/screenshots/comfy-light.png#gh-light-mode-only" alt="ComfyPilot managing three ComfyUI installs" width="100%" /></a>
 </p>
 
 ComfyPilot sets up [ComfyUI](https://github.com/Comfy-Org/ComfyUI) with the right PyTorch
@@ -68,36 +65,46 @@ saved tokens and ComfyUI installs over automatically.
 
 ## Screenshots
 
+<sub>Click a screenshot to see it full size.</sub>
+
+### Browse LoRAs on Civitai
+
+Search, sort and filter Civitai's LoRAs by base model, see previews (videos play in the
+detail view) and download straight into the right folder of your ComfyUI.
+
+<p align="center">
+  <a href="docs/screenshots/loras-dark.png"><img src="docs/screenshots/loras-dark.png#gh-dark-mode-only" alt="Browsing Civitai LoRAs" width="100%" /></a><a href="docs/screenshots/loras-light.png"><img src="docs/screenshots/loras-light.png#gh-light-mode-only" alt="Browsing Civitai LoRAs" width="100%" /></a>
+</p>
+
+### Find workflows
+
+Browse ComfyUI workflows shared on Civitai, download one, and ComfyPilot checks what it
+needs.
+
+<p align="center">
+  <a href="docs/screenshots/civitai-workflows-dark.png"><img src="docs/screenshots/civitai-workflows-dark.png#gh-dark-mode-only" alt="Browsing ComfyUI workflows on Civitai" width="100%" /></a><a href="docs/screenshots/civitai-workflows-light.png"><img src="docs/screenshots/civitai-workflows-light.png#gh-light-mode-only" alt="Browsing ComfyUI workflows on Civitai" width="100%" /></a>
+</p>
+
+### And the rest
+
 <table>
   <tr>
     <td width="50%">
-      <picture>
-        <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/install-dark.png" />
-        <img src="docs/screenshots/install-light.png" alt="Installing ComfyUI: GPU, PyTorch and add-ons" />
-      </picture>
+      <a href="docs/screenshots/install-dark.png"><img src="docs/screenshots/install-dark.png#gh-dark-mode-only" alt="Installing ComfyUI: GPU, PyTorch and add-ons" width="100%" /></a><a href="docs/screenshots/install-light.png"><img src="docs/screenshots/install-light.png#gh-light-mode-only" alt="Installing ComfyUI: GPU, PyTorch and add-ons" width="100%" /></a>
       <p align="center"><sub>A new install, with the PyTorch build picked for the GPU</sub></p>
     </td>
     <td width="50%">
-      <picture>
-        <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/models-dark.png" />
-        <img src="docs/screenshots/models-light.png" alt="The model catalog" />
-      </picture>
+      <a href="docs/screenshots/models-dark.png"><img src="docs/screenshots/models-dark.png#gh-dark-mode-only" alt="The model catalog" width="100%" /></a><a href="docs/screenshots/models-light.png"><img src="docs/screenshots/models-light.png#gh-light-mode-only" alt="The model catalog" width="100%" /></a>
       <p align="center"><sub>Models, with variants for your VRAM</sub></p>
     </td>
   </tr>
   <tr>
     <td width="50%">
-      <picture>
-        <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/workflows-dark.png" />
-        <img src="docs/screenshots/workflows-light.png" alt="Checking a workflow's models" />
-      </picture>
+      <a href="docs/screenshots/workflows-dark.png"><img src="docs/screenshots/workflows-dark.png#gh-dark-mode-only" alt="Checking a workflow's models" width="100%" /></a><a href="docs/screenshots/workflows-light.png"><img src="docs/screenshots/workflows-light.png#gh-light-mode-only" alt="Checking a workflow's models" width="100%" /></a>
       <p align="center"><sub>Checking what a workflow needs</sub></p>
     </td>
     <td width="50%">
-      <picture>
-        <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/comfy-light.png" />
-        <img src="docs/screenshots/comfy-dark.png" alt="An install in the other theme" />
-      </picture>
+      <a href="docs/screenshots/comfy-light.png"><img src="docs/screenshots/comfy-light.png#gh-dark-mode-only" alt="An install in the other theme" width="100%" /></a><a href="docs/screenshots/comfy-dark.png"><img src="docs/screenshots/comfy-dark.png#gh-light-mode-only" alt="An install in the other theme" width="100%" /></a>
       <p align="center"><sub>Light and dark themes</sub></p>
     </td>
   </tr>
