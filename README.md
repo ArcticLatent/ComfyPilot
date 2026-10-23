@@ -104,8 +104,8 @@ needs.
       <p align="center"><sub>Checking what a workflow needs</sub></p>
     </td>
     <td width="50%">
-      <a href="docs/screenshots/comfy-dark.png"><img src="docs/screenshots/comfy-dark.png" alt="An install in the dark theme" width="100%" /></a>
-      <p align="center"><sub>The dark theme (the light one is at the top)</sub></p>
+      <a href="docs/screenshots/comfy-light.png"><img src="docs/screenshots/comfy-light.png" alt="An install in the light theme" width="100%" /></a>
+      <p align="center"><sub>The light theme</sub></p>
     </td>
   </tr>
 </table>
