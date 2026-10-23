@@ -7,7 +7,7 @@
 #   SHA256SUMS           every file's checksum
 #   update.json          Windows: the installer (ComfyPilot-Setup-<v>.exe),
 #                        with the release notes the app shows
-#   linux-release.json   Linux: the .deb, .rpm and Arch packages
+#   linux-release.json   Linux: the .deb, .rpm and Arch packages and the AppImage
 #
 # Both manifests are signed with ARCTIC_UPDATE_SIGNING_KEY (tools/
 # manifest-signer) and checked against the public key built into the app,
@@ -38,9 +38,9 @@ signer() {
   cargo run --quiet --release --locked --manifest-path "$ROOT/tools/manifest-signer/Cargo.toml" -- "$@"
 }
 
-mapfile -t packages < <(find "$DIR" -maxdepth 1 -type f \( -name '*.deb' -o -name '*.rpm' -o -name '*.pkg.tar.zst' \) -printf '%f\n' | sort)
-((${#packages[@]} == 3)) || {
-  echo "expected a .deb, an .rpm and an Arch package in $DIR, found: ${packages[*]:-none}" >&2
+mapfile -t packages < <(find "$DIR" -maxdepth 1 -type f \( -name '*.deb' -o -name '*.rpm' -o -name '*.pkg.tar.zst' -o -name '*.AppImage' \) -printf '%f\n' | sort)
+((${#packages[@]} == 4)) || {
+  echo "expected a .deb, an .rpm, an Arch package and an AppImage in $DIR, found: ${packages[*]:-none}" >&2
   exit 1
 }
 

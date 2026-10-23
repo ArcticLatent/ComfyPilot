@@ -42,5 +42,7 @@ carry over from Arctic ComfyUI Helper automatically.
 - Light and dark themes.
 - System tray with a running indicator and Start, Stop and Restart ComfyUI.
 - Updates install themselves: the Windows installer, or the .deb, .rpm or Arch package
-  on Linux.
+  on Linux, and the app reopens afterwards.
+- An AppImage for other Linux distributions (Ubuntu 22.04 and newer, Mint, openSUSE,
+  immutable systems…). It updates itself in place, without asking for a password.
 - Windows: a per-user installer, no administrator rights needed.

@@ -61,7 +61,7 @@ saved tokens and ComfyUI installs over automatically.
 **And also**
 
 - Light and dark themes.
-- Updates itself: the Windows installer, or the right .deb, .rpm or Arch package on Linux.
+- Updates itself: the Windows installer, the right .deb, .rpm or Arch package, or the AppImage.
 
 ## Screenshots
 
@@ -121,6 +121,7 @@ Get the file for your system from the
 | **Debian** 13+, **Ubuntu** 25.04+ and derivatives | `comfypilot_<version>-1_amd64.deb` | `sudo apt install ./comfypilot_*.deb` |
 | **Fedora** 43+ | `comfypilot-<version>-1.fc43.x86_64.rpm` | `sudo dnf install ./comfypilot-*.rpm` |
 | **Arch Linux**, CachyOS, EndeavourOS, Manjaro… | `comfypilot-<version>-1-x86_64.pkg.tar.zst` | `sudo pacman -U comfypilot-*.pkg.tar.zst` |
+| **Any other Linux** (Ubuntu 22.04+, Mint, openSUSE, Bazzite, Silverblue…) | `ComfyPilot-<version>-x86_64.AppImage` | `chmod +x ComfyPilot-*.AppImage`, then run it. [Gear Lever](https://flathub.org/apps/it.mijorus.gearlever) adds it to your app menu. |
 
 After that, ComfyPilot keeps itself up to date: it tells you when a new version is out and
 installs it for you.

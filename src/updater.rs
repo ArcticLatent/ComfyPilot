@@ -405,6 +405,17 @@ async fn run_install_command(path: &Path) -> Result<()> {
         .to_ascii_lowercase();
     let file_arg = path.to_string_lossy().to_string();
 
+    if file_name.ends_with(".appimage") {
+        let Some(target) = running_appimage() else {
+            bail!(
+                "Downloaded an AppImage update, but this copy isn't running as an AppImage: {}",
+                path.display()
+            );
+        };
+        return replace_appimage(&path, &target)
+            .await
+            .with_context(|| format!("failed to replace {}", target.display()));
+    }
     if file_name.ends_with(".deb") {
         if let Err(err) = run_privileged_install("apt", &["install", "-y", &file_arg]).await {
             bail!(
@@ -453,6 +464,75 @@ async fn run_install_command(path: &Path) -> Result<()> {
         "Unsupported Linux update package format: {}",
         path.display()
     )
+}
+
+/// The AppImage file this process runs from (`$APPIMAGE`, set by the
+/// AppImage runtime), if it is one.
+#[cfg(not(target_os = "windows"))]
+pub fn running_appimage() -> Option<PathBuf> {
+    let path = PathBuf::from(std::env::var_os("APPIMAGE")?);
+    path.is_file().then_some(path)
+}
+
+/// Puts the downloaded AppImage in place of the running one: a copy next to
+/// it, made executable, then renamed over it (the running copy keeps its
+/// open file, so this is safe while it runs).
+#[cfg(not(target_os = "windows"))]
+async fn replace_appimage(downloaded: &Path, target: &Path) -> Result<()> {
+    use std::os::unix::fs::PermissionsExt;
+
+    let file_name = target
+        .file_name()
+        .and_then(OsStr::to_str)
+        .context("the AppImage has no file name")?;
+    let staged = target.with_file_name(format!(".{file_name}.update"));
+    fs::copy(downloaded, &staged).await.with_context(|| {
+        format!(
+            "can't write next to {} (is its folder writable?)",
+            target.display()
+        )
+    })?;
+    fs::set_permissions(&staged, std::fs::Permissions::from_mode(0o755)).await?;
+    if let Err(err) = fs::rename(&staged, target).await {
+        let _ = fs::remove_file(&staged).await;
+        return Err(err.into());
+    }
+    let _ = fs::remove_file(downloaded).await;
+    info!("Replaced {} with the update", target.display());
+    Ok(())
+}
+
+/// Starts the app again once this process has exited (after an update
+/// installed over it): a detached shell waits for this PID, then runs the
+/// AppImage or the installed binary. Waiting matters: a second instance
+/// started while this one runs would hand over to it and exit.
+#[cfg(not(target_os = "windows"))]
+pub fn relaunch_after_exit() -> Result<()> {
+    use std::os::unix::process::CommandExt;
+
+    let program = match running_appimage() {
+        Some(appimage) => appimage,
+        None => {
+            // A package upgrade replaced the binary: /proc/self/exe then
+            // reads "<path> (deleted)"; the path itself has the new one.
+            let exe = std::env::current_exe().context("can't tell which program this is")?;
+            let exe = exe.to_string_lossy();
+            PathBuf::from(exe.strip_suffix(" (deleted)").unwrap_or(&exe).to_string())
+        }
+    };
+    std::process::Command::new("sh")
+        .arg("-c")
+        .arg(r#"while kill -0 "$1" 2>/dev/null; do sleep 0.3; done; exec "$2""#)
+        .arg("sh")
+        .arg(std::process::id().to_string())
+        .arg(&program)
+        .stdin(std::process::Stdio::null())
+        .stdout(std::process::Stdio::null())
+        .stderr(std::process::Stdio::null())
+        .process_group(0)
+        .spawn()
+        .with_context(|| format!("failed to schedule a restart of {}", program.display()))?;
+    Ok(())
 }
 
 #[cfg(not(target_os = "windows"))]
@@ -573,7 +653,9 @@ fn detect_linux_distro_family() -> String {
 fn select_linux_release_asset(manifest: &LinuxReleaseManifest) -> Option<&LinuxReleaseAsset> {
     let distro = detect_linux_distro_family();
     let arch = std::env::consts::ARCH.to_ascii_lowercase();
-    let package_kind = if crate::env_flags::external_package_manager().as_deref() == Some("nix") {
+    let package_kind = if running_appimage().is_some() {
+        "appimage"
+    } else if crate::env_flags::external_package_manager().as_deref() == Some("nix") {
         "nix"
     } else {
         distro.as_str()
@@ -605,6 +687,10 @@ fn select_linux_release_asset_for<'a>(
         .collect();
 
     match distro {
+        "appimage" => candidates
+            .iter()
+            .find(|asset| asset.name.to_ascii_lowercase().ends_with(".appimage"))
+            .copied(),
         "arch" => candidates
             .iter()
             .find(|asset| asset.name.to_ascii_lowercase().contains(".pkg.tar"))
@@ -646,6 +732,7 @@ mod tests {
                 "arctic-helper-1.2.3-x86_64.rpm",
                 "arctic-helper-1.2.3-x86_64.src.rpm",
                 "arctic-helper-1.2.3-x86_64.pkg.tar.zst",
+                "ComfyPilot-1.2.3-x86_64.AppImage",
                 "arctic-comfyui-helper-nix-x86_64.tar.gz",
             ]
             .into_iter()
@@ -678,6 +765,39 @@ mod tests {
             );
             assert!(!selected.name.ends_with(".src.rpm"));
         }
+    }
+
+    #[test]
+    fn selects_the_appimage_when_running_as_one() {
+        let manifest = linux_manifest();
+        let selected = select_linux_release_asset_for(&manifest, "appimage", "x86_64")
+            .expect("an AppImage install should find the AppImage");
+        assert_eq!(selected.name, "ComfyPilot-1.2.3-x86_64.AppImage");
+    }
+
+    #[test]
+    fn replacing_an_appimage_swaps_the_file_and_makes_it_executable() {
+        use std::os::unix::fs::PermissionsExt;
+
+        let dir = std::env::temp_dir().join(format!("comfypilot-appimage-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(&dir).unwrap();
+        let target = dir.join("ComfyPilot.AppImage");
+        let downloaded = dir.join("ComfyPilot-2.0.0-x86_64.AppImage");
+        std::fs::write(&target, "old").unwrap();
+        std::fs::write(&downloaded, "new").unwrap();
+
+        tokio::runtime::Runtime::new()
+            .unwrap()
+            .block_on(replace_appimage(&downloaded, &target))
+            .unwrap();
+
+        assert_eq!(std::fs::read_to_string(&target).unwrap(), "new");
+        let mode = std::fs::metadata(&target).unwrap().permissions().mode();
+        assert_eq!(mode & 0o111, 0o111);
+        assert!(!downloaded.exists());
+        assert!(!dir.join(".ComfyPilot.AppImage.update").exists());
+        let _ = std::fs::remove_dir_all(&dir);
     }
 
     #[test]

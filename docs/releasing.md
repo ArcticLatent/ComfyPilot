@@ -1,6 +1,6 @@
 # Releasing
 
-One command releases ComfyPilot: the .deb, .rpm and Arch packages, the Windows installer,
+One command releases ComfyPilot: the .deb, .rpm and Arch packages, the AppImage, the Windows installer,
 the signed update manifests and the GitHub release with its notes.
 
 ## Making a release
@@ -39,6 +39,7 @@ Needs `git`, `cargo` and the GitHub CLI (`gh auth login`).
 | Linux (deb) | `debian:trixie` container | `comfypilot_<v>-1_amd64.deb` |
 | Linux (rpm) | `fedora:43` container | `comfypilot-<v>-1.fc43.x86_64.rpm` |
 | Linux (arch) | `archlinux` container | `comfypilot-<v>-1-x86_64.pkg.tar.zst` |
+| Linux (AppImage) | `ubuntu-22.04`, Qt 6.8.3 | `ComfyPilot-<v>-x86_64.AppImage` (linuxdeploy) |
 | Windows | `windows-latest`, Qt 6.8.3 | `ComfyPilot-Setup-<v>.exe` (Inno Setup) |
 | Publish | `ubuntu-latest` | `update.json`, `linux-release.json`, `SHA256SUMS`, the release |
 
@@ -61,7 +62,7 @@ only), which is useful for testing packaging changes.
 ## Building packages locally
 
 ```bash
-scripts/build-linux-local.sh            # all three, or: deb | rpm | arch
+scripts/build-linux-local.sh            # all four, or: deb | rpm | arch | appimage
 ```
 
 Builds each package in a clean podman container of its distro with the same script CI runs
@@ -85,6 +86,7 @@ pwsh packaging/windows/build.ps1
 | `packaging/build-linux.sh` | Builds one Linux package inside its distro |
 | `packaging/debian/`, `packaging/fedora/`, `packaging/arch/` | Package definitions |
 | `packaging/linux/` | Desktop entry and AppStream metadata |
+| `packaging/appimage/build.sh` | Builds the AppImage (Ubuntu 22.04, bundles Qt) |
 | `packaging/windows/` | Windows build script and Inno Setup installer |
 | `packaging/release-manifests.sh` | Writes and signs the update manifests |
 | `tools/manifest-signer/` | The signing tool |

@@ -2665,6 +2665,9 @@ async fn auto_update_startup(
                     )),
                 },
             );
+            if let Err(err) = arctic_downloader::updater::relaunch_after_exit() {
+                log::warn!("The update is installed but the app won't reopen by itself: {err:#}");
+            }
             app.exit(0);
             Ok(UpdateCheckResponse {
                 available: true,
