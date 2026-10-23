@@ -29,6 +29,8 @@ fail() {
   exit 1
 }
 step() { printf '\n\033[1m==> %s\033[0m\n' "$*"; }
+# git with GitHub credentials from gh (whatever git's own credential setup is).
+ghgit() { git -c credential.helper= -c credential.helper='!gh auth git-credential' "$@"; }
 
 for cmd in git cargo gh; do
   command -v "$cmd" >/dev/null 2>&1 || fail "$cmd is not installed"
@@ -46,9 +48,10 @@ NOTES="$(scripts/changelog.sh notes "$VERSION")"
 step "Checking"
 branch="$(git symbolic-ref --short HEAD)"
 [[ "$branch" == main ]] || fail "on branch '$branch'; releases are made from main"
-dirty="$(git status --porcelain | grep -v ' CHANGELOG.md$' || true)"
+# CHANGELOG.md, and the version files a failed earlier run may have left.
+dirty="$(git status --porcelain | grep -vE ' (CHANGELOG\.md|Cargo\.toml|app/Cargo\.toml|Cargo\.lock)$' || true)"
 [[ -z "$dirty" ]] || fail "uncommitted changes (only CHANGELOG.md may be):"$'\n'"$dirty"
-git fetch --quiet --tags "$REMOTE" main
+ghgit fetch --quiet --tags "$REMOTE" main
 [[ "$(git rev-parse HEAD)" == "$(git rev-parse "$REMOTE/main")" ]] ||
   fail "main isn't the same as $REMOTE/main (pull or push first)"
 if git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
@@ -74,15 +77,22 @@ for manifest in Cargo.toml app/Cargo.toml; do
 done
 cargo update --workspace --offline --quiet 2>/dev/null || cargo update --workspace --quiet
 git add Cargo.toml app/Cargo.toml Cargo.lock CHANGELOG.md
+committed=0
 if git diff --cached --quiet; then
   echo "(already at $VERSION)"
 else
   git commit --quiet -m "Release $VERSION"
+  committed=1
 fi
 git tag -a "$TAG" -m "ComfyPilot $VERSION"
 
 step "Pushing main and $TAG"
-git push --atomic "$REMOTE" main "$TAG"
+if ! ghgit push --atomic "$REMOTE" main "$TAG"; then
+  git tag -d "$TAG" >/dev/null
+  # Back to before this run (the changes stay), so it can simply run again.
+  ((committed)) && git reset --quiet --mixed HEAD~1
+  fail "push failed; undid the local $TAG tag and commit, so run this again once it's fixed"
+fi
 
 step "Building and publishing on GitHub"
 run_id=""
