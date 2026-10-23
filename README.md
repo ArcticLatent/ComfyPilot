@@ -17,7 +17,7 @@
 </p>
 
 <p align="center">
-  <a href="docs/screenshots/comfy-dark.png"><img src="docs/screenshots/comfy-dark.png#gh-dark-mode-only" alt="ComfyPilot managing three ComfyUI installs" width="100%" /></a><a href="docs/screenshots/comfy-light.png"><img src="docs/screenshots/comfy-light.png#gh-light-mode-only" alt="ComfyPilot managing three ComfyUI installs" width="100%" /></a>
+  <a href="docs/screenshots/comfy-dark.png"><img src="docs/screenshots/comfy-dark.png" alt="ComfyPilot managing three ComfyUI installs" width="100%" /></a>
 </p>
 
 ComfyPilot sets up [ComfyUI](https://github.com/Comfy-Org/ComfyUI) with the right PyTorch
