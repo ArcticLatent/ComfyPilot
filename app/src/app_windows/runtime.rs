@@ -266,7 +266,7 @@ pub(crate) fn start_comfyui_root_impl(
     if let Some(profile) = effective_profile.as_deref() {
         apply_intel_xpu_launch_env(&mut cmd, profile);
     }
-    cmd.current_dir(root);
+    cmd.current_dir(&root);
     if nerdstats_enabled() {
         cmd.stdout(Stdio::inherit()).stderr(Stdio::inherit());
     } else if settings.comfyui_show_runtime_logs {
@@ -287,7 +287,7 @@ pub(crate) fn start_comfyui_root_impl(
             spawn_comfyui_runtime_log_stream(app.clone(), "stderr", stderr);
         }
     }
-    *recover_lock(state.comfyui_process_root.lock()) = Some(root.clone());
+    *recover_lock(state.comfyui_process_root.lock()) = Some(root);
     *recover_lock(state.comfyui_process.lock()) = Some(child);
     Ok(())
 }
