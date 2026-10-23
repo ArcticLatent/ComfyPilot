@@ -25,7 +25,7 @@ use ed25519_dalek::{Signature, Verifier, VerifyingKey};
 /// step, and is never committed. Rotating the key means regenerating both, updating the secret,
 /// and shipping a build with the new constant here before old builds lose
 /// the ability to verify new releases.
-pub const UPDATE_MANIFEST_PUBLIC_KEY_B64: &str = "SA4+y0mbn8up0DyAbGQQvohK+tFVqjr6rrIN+nOPk1E=";
+pub const UPDATE_MANIFEST_PUBLIC_KEY_B64: &str = "rrs0a3FucFu27aAz2rQ1N2kZhvP/BEgNTHKqZK9nS54=";
 
 const UPDATE_MANIFEST_DOMAIN: &[u8] = b"arctic-update-manifest\x00v1\x00";
 const LINUX_RELEASE_MANIFEST_DOMAIN: &[u8] = b"arctic-linux-release-manifest\x00v1\x00";
