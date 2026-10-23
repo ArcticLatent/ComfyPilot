@@ -1,0 +1,30 @@
+name: Feature request
+description: An idea for something ComfyPilot should do, or do better.
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What would you like to do?
+      description: The task or problem, in your own words. What's hard or missing today?
+      placeholder: I'd like to update all my ComfyUI installs at once, because ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: How could ComfyPilot help?
+      description: What you imagine it doing. Rough ideas are fine.
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: What do you do now instead?
+      description: Workarounds, other tools, or "nothing yet".
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else?
+      description: Screenshots, mockups, links to models, nodes or workflows this is about, ...

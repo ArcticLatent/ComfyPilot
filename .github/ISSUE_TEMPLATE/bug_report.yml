@@ -1,0 +1,67 @@
+name: Bug report
+description: Something in ComfyPilot doesn't work as it should.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! The diagnostics report below answers most of our questions, so please include it.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What you did, what you expected, and what happened instead.
+      placeholder: |
+        I clicked "Install ComfyUI" with SageAttention on, and the install stopped at "Installing add-ons" with ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: If you can make it happen again, how?
+      placeholder: |
+        1. Open the ComfyUI page
+        2. ...
+
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostics report
+      description: |
+        In ComfyPilot, click the **clipboard button** at the bottom of the left bar ("Copy diagnostics for a bug report"), then paste here.
+        It has the app and system versions, your GPU, the selected ComfyUI install, launch settings and the last 150 lines of the app's log. Token values are never included, only whether they are set.
+        It's also saved as `diagnostics.txt` in the log folder (the **log button** under the clipboard button opens it).
+      render: text
+    validations:
+      required: true
+
+  - type: textarea
+    id: comfyui-output
+    attributes:
+      label: ComfyUI output (if ComfyUI itself fails)
+      description: |
+        If the problem is ComfyUI failing to start or erroring while running, open **ComfyUI output** in the bottom bar and paste the relevant part (the filter buttons help find errors).
+        No output there? Turn on "Show ComfyUI's output in the app" on the ComfyUI page and start ComfyUI again.
+      render: text
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: System
+      options:
+        - Windows
+        - Debian / Ubuntu (.deb)
+        - Fedora (.rpm)
+        - Arch Linux and derivatives
+        - Other Linux
+    validations:
+      required: true
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else?
+      description: Screenshots, the workflow file, links to models, ...

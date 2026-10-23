@@ -136,6 +136,30 @@ Install ComfyPilot and open it. Your settings, Civitai token and list of ComfyUI
 copied over on the first start, and your ComfyUI installs keep working as they are. On Linux,
 the ComfyPilot package replaces the old `arctic-comfyui-helper` package.
 
+## Something not working?
+
+ComfyPilot keeps a log of what it does, and can put everything we need for a bug report on
+your clipboard:
+
+1. Click the **clipboard button** at the bottom of the left bar (*Copy diagnostics for a
+   bug report*). It copies a report with the app and system versions, your GPU, the selected
+   ComfyUI install, its launch settings and the last 150 lines of the log. Token values are
+   never included, only whether they are set.
+2. [Open a bug report](https://github.com/ArcticLatent/ComfyPilot/issues/new?template=bug_report.yml)
+   and paste it in.
+
+If ComfyUI itself fails to start or shows errors, also paste the relevant part of
+**ComfyUI output** in the bottom bar; its filter buttons show just the errors and warnings.
+
+The **log button** under the clipboard button opens the log folder. It has `comfypilot.log`
+and the last `diagnostics.txt`:
+
+- Linux: `~/.local/share/io.github.ArcticLatent.ComfyPilot/logs/`
+- Windows: `%LOCALAPPDATA%\io.github.ArcticLatent.ComfyPilot\logs\`
+
+Ideas are welcome too:
+[suggest a feature](https://github.com/ArcticLatent/ComfyPilot/issues/new?template=feature_request.yml).
+
 ## Building from source
 
 ComfyPilot is written in Rust with a Qt Quick (Qt 6.8+) interface via
