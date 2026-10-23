@@ -130,6 +130,13 @@ jobs:
       - name: Release notes
         run: scripts/changelog.sh notes "$VERSION" >"$RUNNER_TEMP/notes.md"
 
+      # The signing tool shares the core crate, which builds against D-Bus
+      # (keychain access).
+      - name: Install signing tool dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libdbus-1-dev pkg-config
+
       - name: Sign update manifests
         env:
           ARCTIC_UPDATE_SIGNING_KEY: ${{ secrets.ARCTIC_UPDATE_SIGNING_KEY }}
