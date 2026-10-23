@@ -1,0 +1,23 @@
+[package]
+name = "arctic-manifest-signer"
+version = "0.1.0"
+edition = "2021"
+publish = false
+description = "Signs and verifies Arctic ComfyUI Helper update manifests. Release-time tooling only -- not shipped in the app."
+license = "Apache-2.0"
+
+[[bin]]
+name = "manifest-signer"
+path = "src/main.rs"
+
+[dependencies]
+anyhow.workspace = true
+arctic-downloader = { path = "../.." }
+base64.workspace = true
+ed25519-dalek = { workspace = true, features = ["std"] }
+# `keygen` sources key material directly from the OS CSPRNG via getrandom,
+# rather than pulling in ed25519-dalek's "rand_core" feature and a matching
+# rand_core version -- one fewer version to keep in sync for a 32-byte read.
+getrandom = "0.2"
+serde.workspace = true
+serde_json.workspace = true

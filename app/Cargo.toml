@@ -1,0 +1,51 @@
+[package]
+name = "comfypilot"
+version = "1.0.0"
+edition = "2021"
+rust-version = "1.89"
+authors = ["Arctic Latent"]
+license = "Apache-2.0"
+
+[[bin]]
+name = "ComfyPilot"
+path = "src/main.rs"
+
+[package.metadata]
+
+[features]
+default = ["desktop-tray"]
+# The system tray (Qt Labs Platform SystemTrayIcon in QML).
+desktop-tray = []
+
+[build-dependencies]
+cxx-qt-build = "0.10"
+
+# The .exe's icon and version info (build.rs).
+[target.'cfg(windows)'.build-dependencies]
+winresource = "0.1"
+
+[dependencies]
+anyhow.workspace = true
+env_logger.workspace = true
+fs2 = "0.4"
+log.workspace = true
+open.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+sha2.workspace = true
+cxx = "1.0.176"
+cxx-qt = "0.10"
+cxx-qt-lib = { version = "0.10", features = ["qt_gui", "qt_qml", "qt_quickcontrols"] }
+tokio = { workspace = true, features = ["rt", "rt-multi-thread"] }
+tokio-util = { workspace = true, features = ["rt"] }
+reqwest = { workspace = true, features = ["blocking", "json", "rustls-tls"] }
+arctic-downloader = { path = ".." }
+
+[target.'cfg(target_os = "windows")'.dependencies]
+windows = { version = "0.61", features = [
+    "Win32_Foundation",
+    "Win32_Security",
+    "Win32_System_JobObjects",
+    # JOBOBJECT_EXTENDED_LIMIT_INFORMATION is gated behind this feature.
+    "Win32_System_Threading",
+] }

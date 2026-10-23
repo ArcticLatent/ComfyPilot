@@ -1,0 +1,102 @@
+# Maintainer: Arctic Latent
+pkgname=comfypilot
+pkgver=0.2.9
+pkgrel=1
+pkgdesc='Install and run ComfyUI, and download models, LoRAs and workflows'
+arch=('x86_64')
+url='https://github.com/ArcticLatent/ComfyPilot'
+license=('Apache-2.0')
+options=('!buildflags' '!debug')
+# Qt Quick UI (QML, Controls, Dialogs, Qt.labs.platform tray), SVG icons, WebP
+# previews (qt6-imageformats), video previews (Qt Multimedia with FFmpeg),
+# Wayland; D-Bus for the keychain (Secret Service).
+depends=(
+  'qt6-base'
+  'qt6-declarative'
+  'qt6-svg'
+  'qt6-imageformats'
+  'qt6-multimedia'
+  'qt6-multimedia-ffmpeg'
+  'qt6-wayland'
+  'xdg-desktop-portal'
+  'dbus'
+)
+makedepends=(
+  'binutils'
+  'cargo'
+  'gcc'
+  'rust'
+  'pkgconf'
+)
+# The app was called Arctic ComfyUI Helper before.
+replaces=('arctic-comfyui-helper')
+conflicts=('arctic-comfyui-helper')
+source=()
+sha256sums=()
+
+prepare() {
+  cd "$startdir/../.."
+}
+
+build() {
+  cd "$startdir/../.."
+
+  # A leaked NIX_LDFLAGS (or a compiler wrapper from a Nix development shell)
+  # can make a successful-looking Arch build whose ELF interpreter and RUNPATH
+  # point into /nix/store. Use only the native Arch toolchain and pkg-config
+  # paths for this package build.
+  unset "${!NIX_@}"
+  unset \
+    CARGO_BUILD_RUSTC_WRAPPER \
+    CMAKE_PREFIX_PATH \
+    CPATH \
+    CPLUS_INCLUDE_PATH \
+    C_INCLUDE_PATH \
+    LD_LIBRARY_PATH \
+    LIBRARY_PATH \
+    PKG_CONFIG_LIBDIR \
+    PKG_CONFIG_PATH \
+    RUSTC_WRAPPER
+  export PATH='/usr/bin:/bin'
+  export CC='/usr/bin/gcc'
+  export CXX='/usr/bin/g++'
+  # A shared target folder speeds up repeated builds (packaging/build-linux.sh).
+  export CARGO_TARGET_DIR="${COMFYPILOT_CARGO_TARGET_DIR:-$srcdir/target}"
+  export RUSTFLAGS="-C link-arg=-fuse-ld=bfd"
+  export QMAKE='/usr/bin/qmake6'
+  cargo build --release --manifest-path app/Cargo.toml
+}
+
+check() {
+  cd "$startdir/../.."
+  export CARGO_TARGET_DIR="${COMFYPILOT_CARGO_TARGET_DIR:-$srcdir/target}"
+
+  bash scripts/verify-linux-elf.sh \
+    "$CARGO_TARGET_DIR/release/ComfyPilot" \
+    '/lib64/ld-linux-x86-64.so.2'
+}
+
+package() {
+  cd "$startdir/../.."
+  export CARGO_TARGET_DIR="${COMFYPILOT_CARGO_TARGET_DIR:-$srcdir/target}"
+
+  local id='io.github.ArcticLatent.ComfyPilot'
+
+  install -Dm755 "$CARGO_TARGET_DIR/release/ComfyPilot" \
+    "$pkgdir/usr/bin/comfypilot"
+
+  install -Dm644 "packaging/linux/$id.desktop" \
+    "$pkgdir/usr/share/applications/$id.desktop"
+
+  install -Dm644 "packaging/linux/$id.metainfo.xml" \
+    "$pkgdir/usr/share/metainfo/$id.metainfo.xml"
+
+  install -Dm644 app/icons/icon.svg \
+    "$pkgdir/usr/share/icons/hicolor/scalable/apps/$id.svg"
+
+  install -Dm644 README.md \
+    "$pkgdir/usr/share/doc/$pkgname/README.md"
+
+  install -Dm644 LICENSE \
+    "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}

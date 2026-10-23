@@ -1,0 +1,116 @@
+name: Check Linux
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    name: Audit dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      # Downloads a prebuilt cargo-audit binary instead of compiling one,
+      # so this job stays fast on every PR/push.
+      - name: Install cargo-audit
+        uses: taiki-e/install-action@cargo-audit
+
+      # Scans Cargo.lock against the RustSec advisory database. Cargo.lock
+      # is shared across both platform crates (see workspace.dependencies
+      # in the root Cargo.toml), so one run here covers the Windows build too.
+      # `unmaintained`/`unsound` informational advisories stay warn-only
+      # (cargo-audit's default); only actual vulnerabilities fail the job.
+      - name: Run cargo audit
+        run: cargo audit
+
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      # The app is Qt 6 (QML through cxx-qt). An official Qt LTS from
+      # aqtinstall rather than Ubuntu's older Qt; cxx-qt-build finds it
+      # through qmake on PATH. libdbus-1-dev is for the `keyring` crate's
+      # secret-service backend (token storage).
+      - name: Install Qt
+        uses: jurplel/install-qt-action@a9c63c7c123f3069cff414e7e482d95dfa9d8125 # v4.4.1
+        with:
+          version: "6.8.3"
+          cache: true
+          install-deps: true
+
+      - name: Install Linux build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y appstream desktop-file-utils pkg-config libssl-dev libdbus-1-dev
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Cache Rust build
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: .
+
+      - name: Check declared Rust 1.89 minimum
+        run: |
+          rustup toolchain install 1.89.0 --profile minimal --no-self-update
+          cargo +1.89.0 check --locked --manifest-path app/Cargo.toml
+
+      - name: Check Linux application
+        run: cargo check --locked --manifest-path app/Cargo.toml
+
+      - name: Check Rust formatting
+        run: cargo fmt --all -- --check
+
+      - name: Lint shared Rust library
+        run: cargo clippy --locked --lib -- -D warnings
+
+      - name: Lint Linux application
+        run: cargo clippy --locked --manifest-path app/Cargo.toml --all-targets -- -D warnings
+
+      # `desktop-tray` is on by default; build once without it too.
+      - name: Check Linux application (desktop-tray disabled)
+        run: cargo check --locked --no-default-features --manifest-path app/Cargo.toml
+
+      - name: Lint Linux application (desktop-tray disabled)
+        run: cargo clippy --locked --no-default-features --manifest-path app/Cargo.toml --all-targets -- -D warnings
+
+      # Release-time only (see tools/manifest-signer/src/main.rs) but not
+      # part of either app manifest-path above, so it needs its own check --
+      # a break here would silently fail the next release instead of CI.
+      - name: Check manifest-signer tool
+        run: cargo check --locked --manifest-path tools/manifest-signer/Cargo.toml --all-targets
+
+      - name: Lint manifest-signer tool
+        run: cargo clippy --locked --manifest-path tools/manifest-signer/Cargo.toml --all-targets -- -D warnings
+
+      - name: Lint QML
+        run: qmllint app/qml/*.qml
+
+      - name: Validate Linux desktop metadata
+        run: |
+          appstreamcli validate packaging/linux/io.github.ArcticLatent.ComfyPilot.metainfo.xml
+          desktop-file-validate packaging/linux/io.github.ArcticLatent.ComfyPilot.desktop
+
+      - name: Test shared Rust library
+        run: cargo test --locked --lib
+
+      - name: Test Linux backend
+        run: cargo test --locked --manifest-path app/Cargo.toml
+
+      - name: Test Linux backend (desktop-tray disabled)
+        run: cargo test --locked --no-default-features --manifest-path app/Cargo.toml
+
+      - name: Test manifest-signer tool
+        run: cargo test --locked --manifest-path tools/manifest-signer/Cargo.toml

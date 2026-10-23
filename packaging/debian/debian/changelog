@@ -1,0 +1,125 @@
+comfypilot (0.2.9-1) unstable; urgency=medium
+
+  * Renamed to ComfyPilot; Qt Quick user interface.
+
+ -- Arctic Latent <contact@arcticlatent.com>  Fri, 23 Oct 2026 14:45:00 -0400
+
+arctic-comfyui-helper (0.2.9-1) unstable; urgency=medium
+
+  * Build Arch packages natively and reject binaries contaminated by Nix build paths.
+
+ -- Arctic Latent <contact@arcticlatent.com>  Sat, 08 Aug 2026 14:57:49 -0400
+
+arctic-comfyui-helper (0.2.8-1) unstable; urgency=medium
+
+  * Detect signed updates for Nix-managed installations without attempting to modify the immutable Nix store.
+
+ -- Arctic Latent <contact@arcticlatent.com>  Fri, 07 Aug 2026 23:27:37 -0400
+
+arctic-comfyui-helper (0.2.7-1) unstable; urgency=medium
+
+  * Fix TLS certificate handling for managed Python processes on NixOS.
+
+ -- Arctic Latent <contact@arcticlatent.com>  Fri, 07 Aug 2026 20:41:44 -0400
+
+arctic-comfyui-helper (0.2.6-1) unstable; urgency=medium
+
+  * Add NixOS packaging, unified Windows development, GPU-aware Torch selection, and fixes for GPU detection, ComfyUI Manager output, and platform-specific Torch profiles.
+
+ -- Arctic Latent <contact@arcticlatent.com>  Wed, 05 Aug 2026 20:00:11 -0400
+
+arctic-comfyui-helper (0.2.5-1) unstable; urgency=medium
+
+  * On high-RAM systems, text encoder support-file defaults now select the largest full non-quantized Tier A encoder when catalog file sizes are available, leaving other Tier A encoder alternatives unchecked unless selected manually.
+
+ -- Arctic Latent <contact@arcticlatent.com>  Sun, 19 Apr 2026 21:30:57 -0400
+
+arctic-comfyui-helper (0.2.4-1) unstable; urgency=medium
+
+  * Linux packages now depend on the GTK XDG Desktop Portal backend so folder selection uses the desktop-native GTK picker instead of falling back to the simpler Zenity dialog.
+
+ -- Arctic Latent <contact@arcticlatent.com>  Sat, 18 Apr 2026 19:45:18 -0400
+
+arctic-comfyui-helper (0.2.3-1) unstable; urgency=medium
+
+  * Changed the Models tab GPU VRAM and RAM selectors to fixed standard hardware-size choices.
+
+ -- Arctic Latent <contact@arcticlatent.com>  Wed, 15 Apr 2026 14:49:56 -0400
+
+arctic-comfyui-helper (0.2.2-1) unstable; urgency=medium
+
+  * Added a manual `Refresh Catalog` action so the running app can reload the remote model catalog without a full restart.
+
+ -- Arctic Latent <contact@arcticlatent.com>  Tue, 07 Apr 2026 13:32:05 -0400
+
+arctic-comfyui-helper (0.2.1-1) unstable; urgency=medium
+
+  * Added a full-screen loading transition when switching into `Manage Existing` and when changing between managed ComfyUI installs.
+
+ -- Arctic Latent <contact@arcticlatent.com>  Mon, 06 Apr 2026 19:02:26 -0400
+
+arctic-comfyui-helper (0.2.0-1) unstable; urgency=medium
+
+  * Release v0.2.0
+
+ -- Arctic Latent <contact@arcticlatent.com>  Sun, 29 Mar 2026 17:04:36 -0400
+
+arctic-comfyui-helper (0.1.9-1) unstable; urgency=medium
+
+  * Fixed a Linux Intel XPU readiness-check issue where the app could keep telling users to log out and back in even after a reboot.
+
+ -- Arctic Latent <contact@arcticlatent.com>  Tue, 17 Mar 2026 19:27:45 -0400
+
+arctic-comfyui-helper (0.1.8-1) unstable; urgency=medium
+
+  * Fixed a Linux Intel XPU readiness-check issue where the app could keep telling users to log out and back in even after a reboot.
+
+ -- Arctic Latent <contact@arcticlatent.com>  Mon, 16 Mar 2026 21:20:42 -0400
+
+arctic-comfyui-helper (0.1.7-1) unstable; urgency=medium
+
+  * Added Linux Intel GPU support for ComfyUI installs with a new `Torch 2.9.1 + XPU` option.
+
+ -- Arctic Latent <contact@arcticlatent.com>  Sat, 14 Mar 2026 14:15:04 -0400
+
+arctic-comfyui-helper (0.1.6-1) unstable; urgency=medium
+
+  * Fixed Linux GPU detection priority so NVIDIA GPUs are no longer overridden by detected AMD integrated graphics.
+
+ -- Arctic Latent <contact@arcticlatent.com>  Fri, 13 Mar 2026 22:38:24 -0400
+
+arctic-comfyui-helper (0.1.5-1) unstable; urgency=medium
+
+  * Added a new `Flags` section for ComfyUI launch options.
+
+ -- Arctic Latent <contact@arcticlatent.com>  Thu, 12 Mar 2026 16:33:19 -0400
+
+arctic-comfyui-helper (0.1.4-1) unstable; urgency=medium
+
+  * Fixed extra model (shared folder) issue
+
+ -- Arctic Latent <contact@arcticlatent.com>  Fri, 27 Feb 2026 11:13:28 -0500
+
+arctic-comfyui-helper (0.1.3-1) unstable; urgency=medium
+
+  * ComfyUI updates are now more reliable and less confusing: fresh installs pin to latest release tag, divergent git states auto-recover with backup, and update close/relaunch messaging is clearer.
+
+ -- Arctic Latent <contact@arcticlatent.com>  Sun, 22 Feb 2026 04:11:48 -0500
+
+arctic-comfyui-helper (0.1.2-1) unstable; urgency=medium
+
+  * Added optional HF Xet (Experimental) toggle in Models; default downloader remains default/off.
+
+ -- Arctic Latent <contact@arcticlatent.com>  Sun, 22 Feb 2026 02:28:30 -0500
+
+arctic-comfyui-helper (0.1.1-1) unstable; urgency=medium
+
+  * First release of the updated app
+
+ -- Arctic Latent <contact@arcticlatent.com>  Tue, 17 Feb 2026 14:44:41 -0500
+
+arctic-comfyui-helper (0.1.0-1) unstable; urgency=medium
+
+  * Initial Debian package scaffold.
+
+ -- Arctic Latent <contact@arcticlatent.com>  Sat, 14 Feb 2026 18:00:00 +0000

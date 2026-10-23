@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=ComfyPilot
+GenericName=ComfyUI Manager
+Comment=Install and run ComfyUI, and download models, LoRAs and workflows
+Exec=comfypilot
+Icon=io.github.ArcticLatent.ComfyPilot
+Terminal=false
+Categories=Graphics;
+Keywords=ComfyUI;Stable Diffusion;AI;Models;LoRA;Workflows;
+StartupNotify=true

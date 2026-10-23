@@ -1,0 +1,215 @@
+Supabase Migration Handoff
+
+We migrated the Arctic Helper Catalog admin backend away from a GitHub-hosted
+assets/catalog.json file and into Supabase.
+
+Current architecture:
+
+- Catalog data now lives in Supabase Postgres.
+- Workflow preview images now live in Supabase Storage.
+- GitHub is no longer the source of truth for the catalog JSON.
+- The old JSON shape is preserved exactly, but it is stored as a jsonb document in Postgres.
+
+Supabase Postgres
+
+The catalog table is:
+
+public.catalog_documents
+
+Schema:
+
+create table if not exists public.catalog_documents (
+  catalog_key text primary key,
+  catalog jsonb not null,
+  updated_at timestamptz not null default now()
+);
+
+The active catalog row uses:
+
+catalog_key = 'main'
+
+The actual catalog JSON is stored in:
+
+catalog_documents.catalog
+
+The JSON shape is the same as the old GitHub-hosted catalog.json:
+
+{
+  "catalog_version": 1,
+  "models": [],
+  "loras": [],
+  "workflows": []
+}
+
+So if the app previously parsed the GitHub JSON file, it can continue using the same model/schema
+after fetching catalog_documents.catalog.
+
+How The Admin App Writes
+
+The admin panel writes to Supabase Postgres through its Rust API:
+
+PUT /api/catalog
+
+The Rust API validates the catalog and upserts the catalog_documents.main row.
+
+The admin panel reads through:
+
+GET /api/catalog
+
+That returns the raw catalog JSON object, not a wrapper.
+
+Example response shape:
+
+{
+  "catalog_version": 1,
+  "models": [...],
+  "loras": [...],
+  "workflows": [...]
+}
+
+Workflow Preview Images
+
+Workflow preview images are no longer expected to be GitHub raw URLs.
+
+They are now stored in Supabase Storage bucket:
+
+workflow-previews
+
+Object path format:
+
+workflows/<workflow-id>.webp
+
+Public URL format:
+
+https://<project-ref>.supabase.co/storage/v1/object/public/workflow-previews/workflows/<workflow-id>.webp
+
+The catalog still stores only the URL:
+
+{
+  "preview_image_url": "https://...supabase.co/storage/v1/object/public/workflow-previews/workflows/flux-all-in-one.webp"
+}
+
+So the consuming app does not need to query Supabase Storage separately. It can just render/use
+preview_image_url.
+
+Recommended Read Strategy For The App
+
+Best option: add a backend/server-side read path that queries Supabase Postgres directly.
+
+Query:
+
+select catalog
+from public.catalog_documents
+where catalog_key = 'main';
+
+Then return/use that JSON exactly like the previous GitHub catalog.json.
+
+Pseudo-code:
+
+const { data, error } = await supabase
+  .from("catalog_documents")
+  .select("catalog")
+  .eq("catalog_key", "main")
+  .single();
+
+if (error) throw error;
+
+const catalog = data.catalog;
+
+If using direct Postgres from a backend:
+
+select catalog
+from public.catalog_documents
+where catalog_key = 'main';
+
+Important: do not expose service role keys in the client.
+
+Public Client Read Option
+
+If the app is client-only and needs to read directly from Supabase in the browser, then Row Level
+Security/policies must be configured safely.
+
+Current admin setup uses backend credentials and does not require browser Supabase access.
+
+For a public client reader, create a read-only policy on catalog_documents that allows selecting
+only the main row.
+
+Example policy direction:
+
+alter table public.catalog_documents enable row level security;
+
+create policy "Public can read main catalog"
+on public.catalog_documents
+for select
+to anon
+using (catalog_key = 'main');
+
+Do not create public insert/update/delete policies.
+
+Then a frontend Supabase client can read:
+
+const { data, error } = await supabase
+  .from("catalog_documents")
+  .select("catalog")
+  .eq("catalog_key", "main")
+  .single();
+
+The frontend should only use the publishable/anon key, never the service role key.
+
+Environment Variables Used By Admin Backend
+
+The admin backend uses:
+
+ARCTIC_SUPABASE_DATABASE_URL
+ARCTIC_SUPABASE_URL
+ARCTIC_SUPABASE_SERVICE_ROLE_KEY
+ARCTIC_SUPABASE_STORAGE_BUCKET
+
+ARCTIC_SUPABASE_DATABASE_URL is a Postgres connection string.
+
+ARCTIC_SUPABASE_URL is:
+
+https://<project-ref>.supabase.co
+
+ARCTIC_SUPABASE_SERVICE_ROLE_KEY is backend-only and must never be exposed in frontend code.
+
+ARCTIC_SUPABASE_STORAGE_BUCKET defaults to:
+
+workflow-previews
+
+Migration Files
+
+The Supabase migration in the admin repo is:
+
+supabase/migrations/20260420000000_catalog_documents.sql
+
+That creates the catalog_documents table.
+
+Compatibility Notes
+
+The consuming app should stop reading:
+
+https://raw.githubusercontent.com/.../assets/catalog.json
+
+and instead read the catalog JSON document from Supabase.
+
+The internal catalog JSON schema is unchanged, so most parsing/rendering code should not need to
+change beyond the fetch/source layer.
+
+Workflows still have:
+
+{
+  "workflow_json_url": "...",
+  "preview_image_url": "..."
+}
+
+preview_image_url may now be a Supabase Storage public URL.
+
+Suggested Fallback
+
+If needed, the app can temporarily support both sources:
+
+1. Try Supabase Postgres catalog_documents.main.
+2. If unavailable, fallback to the old GitHub raw JSON URL.
+
+But Supabase should now be treated as the source of truth.

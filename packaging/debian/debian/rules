@@ -1,0 +1,23 @@
+#!/usr/bin/make -f
+
+# A shared target folder (packaging/build-linux.sh) speeds up repeated builds.
+export CARGO_TARGET_DIR ?= $(CURDIR)/target/debian
+export QMAKE := qmake6
+APP_ID := io.github.ArcticLatent.ComfyPilot
+PKG := debian/comfypilot
+
+%:
+	dh $@
+
+override_dh_auto_build:
+	cargo build --release --manifest-path app/Cargo.toml
+
+override_dh_auto_install:
+	install -Dpm0755 $(CARGO_TARGET_DIR)/release/ComfyPilot \
+		$(PKG)/usr/bin/comfypilot
+	install -Dpm0644 packaging/linux/$(APP_ID).desktop \
+		$(PKG)/usr/share/applications/$(APP_ID).desktop
+	install -Dpm0644 packaging/linux/$(APP_ID).metainfo.xml \
+		$(PKG)/usr/share/metainfo/$(APP_ID).metainfo.xml
+	install -Dpm0644 app/icons/icon.svg \
+		$(PKG)/usr/share/icons/hicolor/scalable/apps/$(APP_ID).svg

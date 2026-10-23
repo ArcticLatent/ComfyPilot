@@ -1,0 +1,20 @@
+/target
+/app/target
+/app/home/
+**/*.rs.bk
+.DS_Store
+.vscode/
+.env
+
+# Build output (packaging/build-linux.sh, packaging/windows/build.ps1)
+/dist/
+/packaging/arch/src/
+/packaging/arch/pkg/
+/packaging/arch/*.pkg.tar.zst
+
+# Written by the Qt tooling, with absolute paths.
+.qmlls.ini
+
+# Local agent notes
+AGENTS.md
+CLAUDE.md

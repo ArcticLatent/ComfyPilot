@@ -1,0 +1,55 @@
+[package]
+name = "arctic-downloader"
+version = "1.0.0"
+edition = "2021"
+rust-version = "1.89"
+authors = ["Arctic Latent"]
+license = "Apache-2.0"
+
+[workspace]
+members = ["app", "tools/manifest-signer"]
+resolver = "2"
+
+[workspace.dependencies]
+anyhow = "1"
+base64 = "0.22"
+ed25519-dalek = { version = "2", default-features = false }
+env_logger = "0.11"
+log = "0.4"
+open = "5"
+reqwest = { version = "0.12", default-features = false }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"
+tokio = "1"
+tokio-util = "0.7"
+
+[dependencies]
+anyhow.workspace = true
+base64.workspace = true
+blake3 = "1"
+directories = "5"
+ed25519-dalek = { workspace = true, features = ["std"] }
+env_logger.workspace = true
+futures = "0.3"
+image = "0.25"
+log.workspace = true
+once_cell = "1.19"
+open.workspace = true
+percent-encoding = "2"
+reqwest = { workspace = true, features = ["json", "stream", "rustls-tls", "http2"] }
+semver = "1"
+serde.workspace = true
+serde_json.workspace = true
+sha2.workspace = true
+sysinfo = "0.30"
+thiserror = "1"
+tokio = { workspace = true, features = ["rt-multi-thread", "macros", "process", "sync", "time"] }
+tokio-util = { workspace = true, features = ["io", "rt"] }
+
+[target.'cfg(windows)'.dependencies]
+keyring = { version = "3", default-features = false, features = ["windows-native"] }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+keyring = { version = "3", default-features = false, features = ["sync-secret-service", "crypto-rust"] }
+

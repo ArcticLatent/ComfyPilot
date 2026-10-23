@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.ArcticLatent.ComfyPilot</id>
+  <name>ComfyPilot</name>
+  <summary>Install and run ComfyUI, and download models, LoRAs and workflows</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>Apache-2.0</project_license>
+  <developer id="com.arcticlatent">
+    <name>Arctic Latent</name>
+  </developer>
+  <launchable type="desktop-id">io.github.ArcticLatent.ComfyPilot.desktop</launchable>
+  <replaces>
+    <id>io.github.ArcticHelper</id>
+  </replaces>
+  <description>
+    <p>Native desktop app for installing and running ComfyUI, picking the right PyTorch stack for your GPU, downloading models, browsing LoRAs and workflows on Civitai, and checking what a workflow needs.</p>
+  </description>
+  <categories>
+    <category>Graphics</category>
+  </categories>
+  <content_rating type="oars-1.1"/>
+  <url type="homepage">https://github.com/ArcticLatent/ComfyPilot</url>
+  <url type="bugtracker">https://github.com/ArcticLatent/ComfyPilot/issues</url>
+</component>

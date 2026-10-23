@@ -1,0 +1,146 @@
+name: Release
+
+# A version tag (v1.0.0, pushed by scripts/release.sh) builds every package
+# and publishes the GitHub release with the notes from CHANGELOG.md. Run it
+# by hand ("Run workflow") to build the packages without releasing them.
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+
+env:
+  ARCTIC_SUPABASE_URL: ${{ secrets.ARCTIC_SUPABASE_URL }}
+  ARCTIC_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.ARCTIC_SUPABASE_PUBLISHABLE_KEY }}
+
+jobs:
+  linux:
+    name: Linux (${{ matrix.target }})
+    runs-on: ubuntu-latest
+    container: ${{ matrix.image }}
+    strategy:
+      matrix:
+        include:
+          - target: deb
+            image: docker.io/library/debian:trixie
+          - target: rpm
+            image: registry.fedoraproject.org/fedora:43
+          - target: arch
+            image: docker.io/library/archlinux:latest
+    env:
+      CARGO_HOME: /cache/cargo
+      RUSTUP_HOME: /cache/rustup
+      CARGO_TARGET_DIR: /cache/target
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Cache Rust build
+        uses: actions/cache@v4
+        with:
+          path: |
+            /cache/cargo/registry
+            /cache/cargo/git
+            /cache/target
+          key: linux-${{ matrix.target }}-${{ hashFiles('Cargo.lock') }}
+          restore-keys: linux-${{ matrix.target }}-
+
+      - name: Build package
+        run: bash packaging/build-linux.sh ${{ matrix.target }} --install-deps
+
+      - name: Upload package
+        uses: actions/upload-artifact@v4
+        with:
+          name: package-${{ matrix.target }}
+          path: |
+            dist/*.deb
+            dist/*.rpm
+            dist/*.pkg.tar.zst
+          if-no-files-found: error
+
+  windows:
+    name: Windows (installer)
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@a9c63c7c123f3069cff414e7e482d95dfa9d8125 # v4.4.1
+        with:
+          version: "6.8.3"
+          arch: win64_msvc2022_64
+          modules: qtmultimedia qtimageformats
+          cache: true
+
+      - name: Cache Rust build
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: .
+          key: release
+
+      - name: Build installer
+        shell: pwsh
+        run: ./packaging/windows/build.ps1
+
+      - name: Upload installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: package-windows
+          path: dist/ComfyPilot-Setup-*.exe
+          if-no-files-found: error
+
+  publish:
+    name: Publish release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [linux, windows]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Download packages
+        uses: actions/download-artifact@v4
+        with:
+          pattern: package-*
+          path: dist
+          merge-multiple: true
+
+      - name: Check version
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          cargo_version="$(sed -n 's/^version = "\(.*\)"$/\1/p' app/Cargo.toml | head -1)"
+          if [[ "$version" != "$cargo_version" ]]; then
+            echo "Tag $GITHUB_REF_NAME doesn't match app/Cargo.toml ($cargo_version)" >&2
+            exit 1
+          fi
+          echo "VERSION=$version" >>"$GITHUB_ENV"
+
+      - name: Release notes
+        run: scripts/changelog.sh notes "$VERSION" >"$RUNNER_TEMP/notes.md"
+
+      - name: Sign update manifests
+        env:
+          ARCTIC_UPDATE_SIGNING_KEY: ${{ secrets.ARCTIC_UPDATE_SIGNING_KEY }}
+        run: packaging/release-manifests.sh dist "$VERSION" "$GITHUB_REPOSITORY" "$RUNNER_TEMP/notes.md"
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/* \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "ComfyPilot $VERSION" \
+            --notes-file "$RUNNER_TEMP/notes.md" \
+            --verify-tag
